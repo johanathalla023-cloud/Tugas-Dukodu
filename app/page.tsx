@@ -115,12 +115,12 @@ export default function HomePage() {
                 </p>
 
                 <div className="hero-cta">
-                  <button className="btn btn-primary btn-lg">
+                  <a href="#cek-area" className="btn btn-primary btn-lg">
                     <i className="fas fa-location-dot"></i>
                     Cek Ketersediaan
-                  </button>
+                  </a>
                   <a href="#paket" className="btn btn-ghost btn-lg">
-                    <i className="fas fa-play-circle"></i>
+                    <i className="fas fa-eye"></i>
                     Lihat Paket
                   </a>
                 </div>
@@ -142,31 +142,29 @@ export default function HomePage() {
               </div>
 
               <div className="hero-visual">
-                <div className="glass-tv">
-                  <div className="speed-display">
-                    <div className="speed-ring">
-                      <div className="speed-ring-inner">
-                        <strong>100</strong>
-                        <span>Mbps</span>
-                      </div>
-                    </div>
-                    <div className="speed-label">Gamer · Ultra Premium</div>
-                    <div className="speed-sub">
-                      Fiber optik, tanpa buffering
-                    </div>
+                <div className="hero-photos">
+                  <div className="hero-photo hero-photo--main">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw0TYJA7SsIgrZmfQgh0FLFHaNhFrYVlMNQ7nu-lhGKw&s=10"
+                      alt="Foto Dukodu 1"
+                      loading="eager"
+                    />
+                    <span className="hero-photo-badge">
+                      <i className="fas fa-bolt"></i> Fiber Optik
+                    </span>
                   </div>
-                </div>
-                <div className="hero-icon hi-1">
-                  <i className="fas fa-wifi"></i>
-                </div>
-                <div className="hero-icon hi-2">
-                  <i className="fas fa-shield-halved"></i>
-                </div>
-                <div className="hero-icon hi-3">
-                  <i className="fas fa-film"></i>
-                </div>
-                <div className="hero-icon hi-4">
-                  <i className="fas fa-headset"></i>
+                  <div className="hero-photo hero-photo--offset">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIBBYpaZjlLk_G7LvqJnbFglqJTA3iNTyabcPmLcweQg&s=10"
+                      alt="Foto Dukodu 2"
+                      loading="eager"
+                    />
+                    <span className="hero-photo-badge">
+                      <i className="fas fa-wifi"></i> Koneksi Stabil
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -311,7 +309,7 @@ export default function HomePage() {
                     <i className="fas fa-rocket"></i>
                     Mulai Sekarang
                   </a>
-                  <a href="/login" className="btn btn-ghost btn-lg">
+                  <a href="https://wa.me/628115634634" className="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">
                     <i className="fas fa-phone"></i>
                     Hubungi Kami
                   </a>
