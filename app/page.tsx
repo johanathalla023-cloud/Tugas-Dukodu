@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import CekArea from "@/components/CekArea";
@@ -5,6 +8,7 @@ import FAQ from "@/components/FAQ";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FooterDetail from "@/components/FooterDetail";
 import Reveal from "@/components/Reveal";
+import SubscribeModal from "@/components/SubscribeModal";
 
 const NAV_LINKS = [
   { label: "Paket", href: "#paket" },
@@ -86,10 +90,16 @@ const FEATURES = [
 ];
 
 export default function HomePage() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <>
       <BgScene />
-      <Navbar links={NAV_LINKS} cta={{ label: "Daftar", href: "/daftar" }} />
+      <Navbar
+        links={NAV_LINKS}
+        cta={{ label: "Berlangganan", href: "#" }}
+        onCtaClick={() => setShowModal(true)}
+      />
 
       <main>
         {/* HERO */}
@@ -329,6 +339,8 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      <SubscribeModal open={showModal} onClose={() => setShowModal(false)} />
     </>
   );
 }

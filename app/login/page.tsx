@@ -29,7 +29,7 @@ export default function LoginPage() {
       <BgScene />
       <Navbar
         links={NAV_LINKS}
-        cta={{ label: "Daftar", href: "/daftar" }}
+        cta={{ label: "Berlangganan", href: "/daftar" }}
       />
 
       <section className="auth-section">
