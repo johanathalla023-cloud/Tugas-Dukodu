@@ -28,7 +28,14 @@ export default function FooterDetail() {
             <div className="detail-item">
               <i className="fas fa-phone"></i>
               <div>
-                <p>+62 811-5634-634 (Chat Only)</p>
+                <a
+                  className="wa-link"
+                  href="https://wa.me/628115634634"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  +62 811-5634-634 (Chat Only)
+                </a>
               </div>
             </div>
             <div className="detail-item">
@@ -61,7 +68,14 @@ export default function FooterDetail() {
             </div>
             <div className="detail-item">
               <i className="fab fa-whatsapp"></i>
-              <p>Official Whatsapp Dukodu</p>
+              <a
+                className="wa-link"
+                href="https://wa.me/628115634634"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Official Whatsapp Dukodu
+              </a>
             </div>
           </div>
         </div>

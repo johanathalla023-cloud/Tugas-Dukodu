@@ -14,9 +14,10 @@ type LinkItem = {
 type NavbarProps = {
   links: LinkItem[];
   cta: { label: string; href: string; primary?: boolean };
+  onCtaClick?: () => void;
 };
 
-export default function Navbar({ links, cta }: NavbarProps) {
+export default function Navbar({ links, cta, onCtaClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -33,10 +34,17 @@ export default function Navbar({ links, cta }: NavbarProps) {
     <header className={`navbar${scrolled ? " scrolled" : ""}`}>
       <div className="container">
         <div className="nav-wrapper">
-          <Link href="/" className="logo-brand" onClick={closeMenu}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO} alt="Dukodu" className="logo-img" />
-          </Link>
+          <div className="brand-group">
+            <Link href="/" className="logo-brand" onClick={closeMenu}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={LOGO} alt="Dukodu" className="logo-img" />
+            </Link>
+
+            <span className="nav-wa" aria-label="WhatsApp Dukodu">
+              <i className="fab fa-whatsapp wa-icon"></i>
+              <span className="wa-number">+62 811-5634-634</span>
+            </span>
+          </div>
 
           <nav className={`nav-links${open ? " mobile-open" : ""}`} id="navLinks">
             {links.map((l) => (
@@ -44,15 +52,27 @@ export default function Navbar({ links, cta }: NavbarProps) {
                 {l.label}
               </Link>
             ))}
-            <Link href={cta.href} className="btn-nav" onClick={closeMenu}>
-              {cta.label}
-            </Link>
+            {onCtaClick ? (
+              <button className="btn-nav btn-nav-primary" onClick={() => { closeMenu(); onCtaClick(); }}>
+                {cta.label}
+              </button>
+            ) : (
+              <Link href={cta.href} className="btn-nav btn-nav-primary" onClick={closeMenu}>
+                {cta.label}
+              </Link>
+            )}
           </nav>
 
           <div className="nav-auth">
-            <Link href={cta.href} className="btn-nav">
-              {cta.label}
-            </Link>
+            {onCtaClick ? (
+              <button className="btn-nav btn-nav-primary" onClick={onCtaClick}>
+                {cta.label}
+              </button>
+            ) : (
+              <Link href={cta.href} className="btn-nav btn-nav-primary">
+                {cta.label}
+              </Link>
+            )}
           </div>
 
           <div
