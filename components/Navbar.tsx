@@ -39,11 +39,6 @@ export default function Navbar({ links, cta, onCtaClick }: NavbarProps) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={LOGO} alt="Dukodu" className="logo-img" />
             </Link>
-
-            <span className="nav-wa" aria-label="WhatsApp Dukodu">
-              <i className="fab fa-whatsapp wa-icon"></i>
-              <span className="wa-number">+62 811-5634-634</span>
-            </span>
           </div>
 
           <nav className={`nav-links${open ? " mobile-open" : ""}`} id="navLinks">

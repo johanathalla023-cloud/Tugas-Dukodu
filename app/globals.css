@@ -188,33 +188,6 @@ button {
   flex-shrink: 0;
 }
 
-.nav-wa {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 1.1rem;
-  color: #e11d48;
-  flex-shrink: 0;
-  cursor: default;
-}
-
-.nav-wa .wa-icon {
-  font-size: 1.25rem;
-  color: #e11d48;
-  line-height: 1;
-}
-
-.nav-wa .wa-number {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #e11d48;
-  white-space: nowrap;
-}
-
-.nav-wa:hover {
-  transform: none;
-}
-
 .nav-links {
   display: flex;
   gap: 4px;

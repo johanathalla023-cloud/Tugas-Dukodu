@@ -56,7 +56,7 @@ export default function TestimonialCarousel() {
 
   const startAuto = useCallback(() => {
     stopAuto();
-    autoRef.current = setInterval(() => rotateRight(1), 3000);
+    autoRef.current = setInterval(() => rotateRight(1), 2500);
   }, [rotateRight]);
 
   function stopAuto() {
