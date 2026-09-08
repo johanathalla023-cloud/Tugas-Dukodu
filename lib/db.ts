@@ -1,22 +1,137 @@
 import fs from "fs";
 import path from "path";
 import { query, isUsingDatabase } from "./pg";
+import { SCHEMA_SQL } from "../db/schema";
+import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS } from "./seedData";
 import { Customer, Package, Ticket, Bill, CoverageArea, Content, AdminUser } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const USING_DB = isUsingDatabase();
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // filesystem read-only (mis. Vercel tanpa DATABASE_URL) — jangan hentikan aplikasi
   }
 }
+
+/* ============ Inisialisasi otomatis (idempotent & self-healing) ============ */
+
+let readyPromise: Promise<void> | null = null;
+
+export function ensureDatabaseReady(): Promise<void> {
+  if (!USING_DB) return Promise.resolve();
+  if (!readyPromise) {
+    readyPromise = initSchemaAndSeed();
+  }
+  return readyPromise;
+}
+
+async function initSchemaAndSeed(): Promise<void> {
+  try {
+    const exists = await query<{ e: boolean }>(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'customers') AS e`
+    );
+    if (!exists[0]?.e) {
+      await query(SCHEMA_SQL);
+    }
+    await seedIfEmpty("packages", SEED_PACKAGES);
+    await seedIfEmpty("coverage_areas", SEED_AREAS);
+    await seedIfEmpty("contents", SEED_CONTENTS);
+    await seedIfEmpty("admins", SEED_ADMINS as unknown as object[]);
+  } catch (err) {
+    readyPromise = null;
+    throw err;
+  }
+}
+
+async function seedIfEmpty(table: string, rows: object[]) {
+  if (!rows.length) return;
+  const counts = await query<{ c: number }>(`SELECT COUNT(*)::int AS c FROM "${table}"`);
+  if ((counts[0]?.c ?? 0) > 0) return;
+  for (const row of rows) {
+    try {
+      await insertRow(table, row);
+    } catch {
+      // benih idem: abaikan duplikat bila beberapa instance berbarengan
+    }
+  }
+}
+
+/* ============ Helper Postgres ============ */
+
+function pgValue(v: unknown): unknown {
+  if (v === undefined) return null;
+  if (typeof v === "object" && v !== null) return JSON.stringify(v);
+  return v;
+}
+
+async function insertRow<T>(table: string, row: T): Promise<T> {
+  const cols = Object.keys(row as object);
+  if (cols.length === 0) return row;
+  const placeholders = cols.map((_, i) => `$${i + 1}`).join(", ");
+  const params = cols.map((c) => pgValue((row as Record<string, unknown>)[c]));
+  await query(
+    `INSERT INTO "${table}" (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${placeholders})`,
+    params
+  );
+  return row;
+}
+
+async function dbAll<T>(table: string): Promise<T[]> {
+  await ensureDatabaseReady();
+  return query<T>(`SELECT * FROM "${table}"`);
+}
+
+async function dbFind<T>(table: string, key: string, value: unknown): Promise<T | null> {
+  await ensureDatabaseReady();
+  const rows = await query<T>(`SELECT * FROM "${table}" WHERE "${key}" = $1`, [value]);
+  return rows[0] ?? null;
+}
+
+async function dbAdd<T>(table: string, row: T): Promise<T> {
+  await ensureDatabaseReady();
+  return insertRow(table, row);
+}
+
+async function dbUpdate<T>(table: string, id: string, updates: Partial<T>): Promise<T | null> {
+  await ensureDatabaseReady();
+  const cols = Object.keys(updates);
+  if (cols.length === 0) return dbFind<T>(table, "id", id);
+  const setClause = cols.map((c, i) => `"${c}" = $${i + 2}`).join(", ");
+  const params = [id, ...cols.map((c) => pgValue((updates as Record<string, unknown>)[c]))];
+  const rows = await query<T>(
+    `UPDATE "${table}" SET ${setClause} WHERE "id" = $1 RETURNING *`,
+    params
+  );
+  return rows[0] ?? null;
+}
+
+async function dbDelete(table: string, id: string) {
+  await ensureDatabaseReady();
+  await query(`DELETE FROM "${table}" WHERE "id" = $1`, [id]);
+}
+
+async function dbReplace(table: string, rows: unknown[]) {
+  await ensureDatabaseReady();
+  await query(`DELETE FROM "${table}"`);
+  for (const r of rows) await insertRow(table, r);
+}
+
+/* ============ Helper JSON (fallback) ============ */
 
 async function fileRead<T>(filename: string): Promise<T[]> {
   ensureDataDir();
   const filePath = path.join(DATA_DIR, filename);
   if (!fs.existsSync(filePath)) {
-    await fileWrite(filename, []);
+    try {
+      await fileWrite(filename, []);
+    } catch {
+      // ignore — read-only env
+    }
     return [];
   }
   const raw = await fs.promises.readFile(filePath, "utf-8");
@@ -41,54 +156,6 @@ async function fileWriteSingle<T>(filename: string, data: T) {
   ensureDataDir();
   const filePath = path.join(DATA_DIR, filename);
   await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
-}
-
-function pgValue(v: unknown): unknown {
-  if (v === undefined) return null;
-  if (typeof v === "object" && v !== null) return JSON.stringify(v);
-  return v;
-}
-
-async function dbAll<T>(table: string): Promise<T[]> {
-  return query<T>(`SELECT * FROM "${table}"`);
-}
-
-async function dbFind<T>(table: string, key: string, value: unknown): Promise<T | null> {
-  const rows = await query<T>(`SELECT * FROM "${table}" WHERE "${key}" = $1`, [value]);
-  return rows[0] ?? null;
-}
-
-async function dbAdd<T>(table: string, row: T): Promise<T> {
-  const cols = Object.keys(row as object);
-  if (cols.length === 0) return row;
-  const placeholders = cols.map((_, i) => `$${i + 1}`).join(", ");
-  const params = cols.map((c) => pgValue((row as Record<string, unknown>)[c]));
-  await query(
-    `INSERT INTO "${table}" (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${placeholders})`,
-    params
-  );
-  return row;
-}
-
-async function dbUpdate<T>(table: string, id: string, updates: Partial<T>): Promise<T | null> {
-  const cols = Object.keys(updates);
-  if (cols.length === 0) return dbFind<T>(table, "id", id);
-  const setClause = cols.map((c, i) => `"${c}" = $${i + 2}`).join(", ");
-  const params = [id, ...cols.map((c) => pgValue((updates as Record<string, unknown>)[c]))];
-  const rows = await query<T>(
-    `UPDATE "${table}" SET ${setClause} WHERE "id" = $1 RETURNING *`,
-    params
-  );
-  return rows[0] ?? null;
-}
-
-async function dbDelete(table: string, id: string) {
-  await query(`DELETE FROM "${table}" WHERE "id" = $1`, [id]);
-}
-
-async function dbReplace(table: string, rows: unknown[]) {
-  await query(`DELETE FROM "${table}"`);
-  for (const r of rows) await dbAdd(table, r);
 }
 
 /* ============ Customers ============ */

@@ -1,48 +1,16 @@
-import fs from "fs";
-import path from "path";
-import { query, isUsingDatabase, closePool } from "../lib/pg";
-import {
-  getPackages, addPackage,
-  getCoverageAreas, addCoverageArea,
-  getContents, addContent,
-  getAdminUsers, saveAdminUsers,
-} from "../lib/db";
-import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS } from "../lib/seedData";
-
-async function seedIfEmpty<T>(getAll: () => Promise<T[]>, add: (row: T) => Promise<unknown>, rows: T[], label: string) {
-  const existing = await getAll();
-  if (existing.length > 0) {
-    console.log(`  - ${label}: ${existing.length} data (dibiarkan)`);
-    return;
-  }
-  for (const row of rows) await add(row);
-  console.log(`  - ${label}: di-seed ${rows.length} data`);
-}
+import { isUsingDatabase, closePool } from "../lib/pg";
+import { ensureDatabaseReady } from "../lib/db";
 
 async function main() {
   if (!isUsingDatabase()) {
-    console.error("DATABASE_URL belum diatur. Jalankan dengan env DATABASE_URL terlebih dahulu.");
-    console.error("Contoh: $env:DATABASE_URL=\"postgres://...\" && npm run db:setup");
-    process.exit(1);
+    console.log(
+      "DATABASE_URL belum diatur — lewati inisialisasi (skema & seed akan dibuat otomatis saat runtime)."
+    );
+    return;
   }
 
-  console.log("✓ Menyiapkan skema tabel...");
-  const schema = fs.readFileSync(path.join(process.cwd(), "db", "schema.sql"), "utf-8");
-  await query(schema);
-
-  console.log("✓ Men-seed data awal (hanya jika tabel kosong)...");
-  await seedIfEmpty(getPackages, addPackage, SEED_PACKAGES, "packages");
-  await seedIfEmpty(getCoverageAreas, addCoverageArea, SEED_AREAS, "coverage_areas");
-  await seedIfEmpty(getContents, addContent, SEED_CONTENTS, "contents");
-
-  const existingAdmins = await getAdminUsers();
-  if (existingAdmins.length === 0) {
-    await saveAdminUsers(SEED_ADMINS);
-    console.log(`  - admins: di-seed ${SEED_ADMINS.length} data`);
-  } else {
-    console.log(`  - admins: ${existingAdmins.length} data (dibiarkan)`);
-  }
-
+  console.log("✓ Menyiapkan skema & seed (hanya jika kosong)...");
+  await ensureDatabaseReady();
   console.log("✓ Skema & seed selesai.");
   await closePool();
 }
@@ -50,6 +18,9 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("db:setup gagal:", err);
-    process.exit(1);
+    console.error(
+      "Perhatian: db:setup gagal di build (akan dicoba ulang otomatis saat runtime):",
+      err?.message ?? err
+    );
+    process.exit(0);
   });
