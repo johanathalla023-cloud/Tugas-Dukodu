@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
   }
 
-  if (getCustomerByEmail(email)) {
+  if (await getCustomerByEmail(email)) {
     return NextResponse.json({ error: "Email sudah terdaftar" }, { status: 400 });
   }
 
@@ -31,16 +31,16 @@ export async function POST(req: NextRequest) {
     status: "pending" as "active" | "suspended" | "pending" | "inactive",
     tanggalDaftar: new Date().toISOString().split("T")[0],
     tanggalPasang: "",
-    noPelanggan: "DKD-" + String(getCustomers().length + 1).padStart(5, "0"),
+    noPelanggan: "DKD-" + String((await getCustomers()).length + 1).padStart(5, "0"),
     fotoKTP: body.fotoKTP || "",
   };
 
-  addCustomer(customer);
+  await addCustomer(customer);
   const safeCustomer = { ...customer, password: undefined };
   return NextResponse.json({ success: true, customer: safeCustomer });
 }
 
 export async function GET() {
-  const customers = getCustomers().map(({ password, ...rest }) => rest);
+  const customers = (await getCustomers()).map(({ password, ...rest }) => rest);
   return NextResponse.json({ success: true, customers });
 }

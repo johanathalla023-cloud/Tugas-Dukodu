@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Data tagihan belum lengkap" }, { status: 400 });
   }
 
-  const customer = getCustomerByNo(noPelanggan);
+  const customer = await getCustomerByNo(noPelanggan);
   if (!customer) {
     return NextResponse.json({ error: "Pelanggan tidak ditemukan" }, { status: 404 });
   }
@@ -26,6 +26,6 @@ export async function POST(req: NextRequest) {
     tanggalJatuhTempo: tanggalJatuhTempo || new Date().toISOString().split("T")[0],
   };
 
-  addBill(bill);
+  await addBill(bill);
   return NextResponse.json({ success: true, bill });
 }

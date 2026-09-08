@@ -8,7 +8,7 @@ export async function PUT(req: NextRequest) {
 
   const updatesWithReply = { ...updates };
   if (body.reply) {
-    const ticket = getTicketById(id);
+    const ticket = await getTicketById(id);
     const reply = {
       id: randomUUID(),
       sender: body.sender || "admin",
@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest) {
   delete updatesWithReply.sender;
   delete updatesWithReply.senderName;
 
-  const updated = updateTicket(id, updatesWithReply);
+  const updated = await updateTicket(id, updatesWithReply);
   if (!updated) return NextResponse.json({ error: "Ticket tidak ditemukan" }, { status: 404 });
   return NextResponse.json({ success: true, ticket: updated });
 }

@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const noPelanggan = searchParams.get("noPelanggan");
-  let tickets = getTickets();
+  let tickets = await getTickets();
   if (noPelanggan) {
     tickets = tickets.filter(t => t.noPelanggan === noPelanggan);
   }
@@ -28,6 +28,6 @@ export async function POST(req: NextRequest) {
     tanggalDiupdate: now,
     replies: [],
   };
-  addTicket(ticket);
+  await addTicket(ticket);
   return NextResponse.json({ success: true, ticket });
 }

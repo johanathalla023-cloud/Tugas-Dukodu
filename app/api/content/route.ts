@@ -3,7 +3,7 @@ import { getContents, addContent, updateContent, deleteContent } from "@/lib/db"
 import { randomUUID } from "crypto";
 
 export async function GET() {
-  return NextResponse.json({ success: true, contents: getContents() });
+  return NextResponse.json({ success: true, contents: await getContents() });
 }
 
 export async function POST(req: NextRequest) {
@@ -19,13 +19,13 @@ export async function POST(req: NextRequest) {
     tanggalDibuat: now.split("T")[0],
     tanggalDiupdate: now.split("T")[0],
   };
-  addContent(content);
+  await addContent(content);
   return NextResponse.json({ success: true, content });
 }
 
 export async function PUT(req: NextRequest) {
   const body = await req.json();
-  const updated = updateContent(body.id, {
+  const updated = await updateContent(body.id, {
     ...body,
     tanggalDiupdate: new Date().toISOString().split("T")[0],
   });
@@ -37,6 +37,6 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
-  deleteContent(id);
+  await deleteContent(id);
   return NextResponse.json({ success: true });
 }

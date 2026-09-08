@@ -4,5 +4,5 @@ import { getCoverageAreas } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json({ success: true, areas: getCoverageAreas() });
+  return NextResponse.json({ success: true, areas: await getCoverageAreas() });
 }

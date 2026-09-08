@@ -3,7 +3,7 @@ import { getAdminByUsername } from "@/lib/db";
 
 export async function POST(req: Request) {
   const { username, password } = await req.json();
-  const admin = getAdminByUsername(username);
+  const admin = await getAdminByUsername(username);
 
   if (!admin || admin.password !== password) {
     return NextResponse.json({ error: "Username atau password salah" }, { status: 401 });

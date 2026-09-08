@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Data area belum lengkap" }, { status: 400 });
   }
 
-  if (body.id && getCoverageAreaById(body.id)) {
-    const updated = updateCoverageArea(body.id, {
+  if (body.id && (await getCoverageAreaById(body.id))) {
+    const updated = await updateCoverageArea(body.id, {
       nama: body.nama,
       lokasi: body.lokasi,
       lat: Number(body.lat),
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     status: body.status || "active",
     tanggalDibuat: new Date().toISOString().split("T")[0],
   };
-  addCoverageArea(area);
+  await addCoverageArea(area);
   return NextResponse.json({ success: true, area });
 }
 
@@ -41,6 +41,6 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
-  deleteCoverageArea(id);
+  await deleteCoverageArea(id);
   return NextResponse.json({ success: true });
 }

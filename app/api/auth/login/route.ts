@@ -3,7 +3,7 @@ import { getCustomerByEmail } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
-  const customer = getCustomerByEmail(email);
+  const customer = await getCustomerByEmail(email);
 
   if (!customer) {
     return NextResponse.json({ error: "Email tidak ditemukan" }, { status: 401 });
