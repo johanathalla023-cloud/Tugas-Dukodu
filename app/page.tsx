@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import CekArea from "@/components/CekArea";
@@ -7,6 +8,7 @@ import FAQ from "@/components/FAQ";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FooterDetail from "@/components/FooterDetail";
 import Reveal from "@/components/Reveal";
+import { formatIDR } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Paket", href: "#paket" },
@@ -15,11 +17,19 @@ const NAV_LINKS = [
   { label: "FAQ", href: "#faq" },
 ];
 
-const PACKAGES = [
+type PaketItem = {
+  name: string;
+  speed: string;
+  harga: number;
+  features: string[];
+  popular?: boolean;
+};
+
+const FALLBACK_PACKAGES: PaketItem[] = [
   {
     name: "Paket Hemat",
     speed: "30 Mbps",
-    price: "175",
+    harga: 175000,
     features: [
       "Kecepatan 30 Mbps",
       "Instalasi Gratis",
@@ -30,7 +40,7 @@ const PACKAGES = [
   {
     name: "Paket Utama",
     speed: "50 Mbps",
-    price: "199",
+    harga: 199000,
     popular: true,
     features: [
       "Kecepatan 50 Mbps",
@@ -43,7 +53,7 @@ const PACKAGES = [
   {
     name: "Paket Premium",
     speed: "100 Mbps",
-    price: "599",
+    harga: 599000,
     features: [
       "Kecepatan 100 Mbps",
       "Instalasi + Training",
@@ -88,6 +98,32 @@ const FEATURES = [
 ];
 
 export default function HomePage() {
+  const [packages, setPackages] = useState<PaketItem[]>(FALLBACK_PACKAGES);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/packages");
+        const data = await res.json();
+        if (cancelled) return;
+        const list = (data.packages || [])
+          .filter((p: any) => p.status === "active")
+          .map((p: any) => ({
+            name: p.nama,
+            speed: p.kecepatan,
+            harga: p.harga,
+            features: p.fitur,
+            popular: p.popular,
+          }));
+        if (list.length) setPackages(list);
+      } catch {
+        // Gagal memuat dari admin — gunakan data bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <>
       <BgScene />
@@ -218,7 +254,7 @@ export default function HomePage() {
             </Reveal>
 
             <div className="paket-grid">
-              {PACKAGES.map((pkg) => (
+              {packages.map((pkg) => (
                 <Reveal key={pkg.name}>
                   <div
                     className={`paket-card${pkg.popular ? " paket-popular" : ""}`}
@@ -233,8 +269,8 @@ export default function HomePage() {
                       </span>
                     </div>
                     <div className="paket-price">
-                      <span className="price-amount">{pkg.price}</span>
-                      <span className="price-period">Ribu/Bulan</span>
+                      <span className="price-amount">{formatIDR(pkg.harga)}</span>
+                      <span className="price-period">/Bulan</span>
                     </div>
                     <div className="paket-divider"></div>
                     <div className="paket-features">
@@ -245,14 +281,18 @@ export default function HomePage() {
                         </div>
                       ))}
                     </div>
-                    <button
+                    <a
+                      href="/berlangganan"
                       className={`btn-paket${pkg.popular ? " btn-paket-primary" : ""}`}
                     >
                       Pilih Paket
-                    </button>
+                    </a>
                   </div>
                 </Reveal>
               ))}
+              {packages.length === 0 && (
+                <div className="paket-empty">Belum ada paket tersedia.</div>
+              )}
             </div>
           </div>
         </section>

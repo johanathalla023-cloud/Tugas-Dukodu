@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import FooterDetail from "@/components/FooterDetail";
 import LocationMap from "@/components/LocationMap";
+import { setCustomerSession } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Beranda", href: "/" },
@@ -16,6 +18,7 @@ const NAV_LINKS = [
 const PACKAGES = [
   {
     id: "hemat",
+    paketId: "pkg-001",
     name: "Paket Hemat",
     speed: "30 Mbps",
     price: "175",
@@ -23,6 +26,7 @@ const PACKAGES = [
   },
   {
     id: "utama",
+    paketId: "pkg-002",
     name: "Paket Utama",
     speed: "50 Mbps",
     price: "199",
@@ -36,6 +40,7 @@ const PACKAGES = [
   },
   {
     id: "premium",
+    paketId: "pkg-003",
     name: "Paket Premium",
     speed: "100 Mbps",
     price: "599",
@@ -155,6 +160,11 @@ const KELURAHAN: Record<string, string[]> = {
 
 type Step = 1 | 2 | 3;
 
+const buildAlamatUtama = (f: FormData): string =>
+  [f.alamat, f.kelurahan, f.kecamatan, f.kabupaten, f.provinsi]
+    .filter(Boolean)
+    .join(", ");
+
 type FormData = {
   provinsi: string;
   kabupaten: string;
@@ -168,6 +178,11 @@ type FormData = {
   email: string;
   wa: string;
   password: string;
+  fotoKtp: string;
+  alamatInstalasi: string;
+  alamatPenagihan: string;
+  instalasiSamaUtama: boolean;
+  penagihanSama: boolean;
 };
 
 const EMPTY_FORM: FormData = {
@@ -183,19 +198,53 @@ const EMPTY_FORM: FormData = {
   email: "",
   wa: "",
   password: "",
+  fotoKtp: "",
+  alamatInstalasi: "",
+  alamatPenagihan: "",
+  instalasiSamaUtama: false,
+  penagihanSama: false,
 };
 
 export default function BerlanggananPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const update = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => {
       const next = { ...prev };
       delete next[field];
+      return next;
+    });
+  };
+
+  const togglePenagihanSama = (same: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      penagihanSama: same,
+      alamatPenagihan: same ? buildAlamatUtama(prev) : prev.alamatPenagihan,
+    }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.alamatPenagihan;
+      return next;
+    });
+  };
+
+  const toggleInstalasiSamaUtama = (same: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      instalasiSamaUtama: same,
+      alamatInstalasi: same ? buildAlamatUtama(prev) : prev.alamatInstalasi,
+    }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.alamatInstalasi;
       return next;
     });
   };
@@ -231,6 +280,43 @@ export default function BerlanggananPage() {
     }));
   };
 
+  const onKtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png"];
+    const allowedExt = /\.(jpg|jpeg|png)$/i;
+    const MAX_SIZE = 5 * 1024 * 1024;
+
+    const validType =
+      allowedTypes.includes(file.type) && allowedExt.test(file.name);
+
+    if (!validType) {
+      setErrors((prev) => ({
+        ...prev,
+        fotoKtp: "Format file harus JPG, JPEG, atau PNG",
+      }));
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      setErrors((prev) => ({
+        ...prev,
+        fotoKtp: "Ukuran file maksimal 5 MB",
+      }));
+      e.target.value = "";
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, fotoKtp: file.name }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.fotoKtp;
+      return next;
+    });
+  };
+
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
 
@@ -262,6 +348,11 @@ export default function BerlanggananPage() {
       } else if (form.password.length < 8) {
         e.password = "Password minimal 8 karakter";
       }
+      if (!form.fotoKtp) e.fotoKtp = "Foto KTP wajib dilampirkan";
+      if (!form.alamatInstalasi.trim())
+        e.alamatInstalasi = "Alamat instalasi wajib diisi";
+      if (!form.penagihanSama && !form.alamatPenagihan.trim())
+        e.alamatPenagihan = "Alamat penagihan wajib diisi";
     }
 
     setErrors(e);
@@ -277,8 +368,54 @@ export default function BerlanggananPage() {
     setErrors({});
   };
 
-  const submit = () => {
-    if (validateStep()) setSubmitted(true);
+  const submit = async () => {
+    if (!validateStep()) return;
+    setSubmitting(true);
+    setSubmitError("");
+
+    const selectedPkg = PACKAGES.find((p) => p.id === form.paket);
+
+    try {
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.nama,
+          email: form.email,
+          phone: form.wa,
+          password: form.password,
+          alamat: buildAlamatUtama(form),
+          provinsi: form.provinsi,
+          kabupaten: form.kabupaten,
+          kecamatan: form.kecamatan,
+          kelurahan: form.kelurahan,
+          lat: form.lat,
+          lng: form.lng,
+          paketId: selectedPkg?.paketId || "",
+          fotoKTP: form.fotoKtp,
+          alamatInstalasi: form.alamatInstalasi,
+          alamatPenagihan: form.alamatPenagihan,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal mengirim pendaftaran");
+
+      setCustomerSession({
+        id: data.customer.id,
+        namaLengkap: data.customer.namaLengkap,
+        email: data.customer.email,
+        noWhatsApp: data.customer.noWhatsApp,
+        noPelanggan: data.customer.noPelanggan,
+        status: data.customer.status,
+        paketId: data.customer.paketId,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const selectedPkg = PACKAGES.find((p) => p.id === form.paket);
@@ -286,25 +423,33 @@ export default function BerlanggananPage() {
   return (
     <>
       <BgScene />
-      <Navbar links={NAV_LINKS} cta={{ label: "Masuk", href: "/login" }} />
+      <Navbar links={NAV_LINKS} />
 
       <section className="subs-section">
         <div className="subs-card">
           {submitted ? (
-            <div className="modal-success">
-              <div className="modal-success-icon">
-                <i className="fas fa-check"></i>
+<div className="modal-success">
+                <div className="modal-success-icon">
+                  <i className="fas fa-check"></i>
+                </div>
+                <h3>Pendaftaran Berhasil!</h3>
+                <p>
+                  Terima kasih <strong>{form.nama}</strong>. Tim Dukodu akan
+                  menghubungi Anda via WhatsApp dalam 1×24 jam untuk konfirmasi
+                  pemasangan.
+                </p>
+                <div className="modal-success-actions">
+                  <button
+                    className="btn btn-primary modal-success-btn"
+                    onClick={() => router.push("/portal")}
+                  >
+                    <i className="fas fa-user-circle"></i> Masuk ke Portal
+                  </button>
+                  <a href="/" className="btn btn-ghost modal-success-btn">
+                    Kembali ke Beranda
+                  </a>
+                </div>
               </div>
-              <h3>Pendaftaran Berhasil!</h3>
-              <p>
-                Terima kasih <strong>{form.nama}</strong>. Tim Dukodu akan
-                menghubungi Anda via WhatsApp dalam 1×24 jam untuk konfirmasi
-                pemasangan.
-              </p>
-              <a href="/" className="btn btn-primary modal-success-btn">
-                Kembali ke Beranda
-              </a>
-            </div>
           ) : (
             <>
               {/* Steps Indicator */}
@@ -520,61 +665,164 @@ export default function BerlanggananPage() {
               {/* Step 3: Data Diri */}
               {step === 3 && (
                 <div className="subs-form">
-                  <h3 className="subs-form-title">
-                    <i className="fas fa-user"></i> Data Diri
-                  </h3>
-                  {selectedPkg && (
-                    <div className="modal-summary">
-                      <div className="modal-summary-label">Paket yang dipilih</div>
-                      <div className="modal-summary-value">
-                        <i className="fas fa-bolt"></i> {selectedPkg.name} —{" "}
-                        {selectedPkg.speed} — Rp {selectedPkg.price}.000/bulan
+                  {/* Kolom Foto KTP + Data Diri */}
+                  <div className="subs-kolom">
+                    {/* Foto KTP (di atas) */}
+                    <div className="subs-field subs-ktp-field">
+                      <label>
+                        Foto KTP <span className="subs-req">*</span>
+                      </label>
+                      <div className="subs-upload">
+                        <label className={`subs-upload-box${form.fotoKtp ? " has-file" : ""}`}>
+                          <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                            onChange={onKtpChange}
+                          />
+                          {form.fotoKtp ? (
+                            <>
+                              <i className="fas fa-file-image"></i>
+                              <span className="subs-upload-name">{form.fotoKtp}</span>
+                              <span className="subs-upload-change">Ganti file</span>
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-cloud-upload-alt"></i>
+                              <span className="subs-upload-title">
+                                Unggah Foto KTP
+                              </span>
+                              <span className="subs-upload-sub">
+                                Klik untuk memilih file (JPG, JPEG, PNG — max 5 MB)
+                              </span>
+                            </>
+                          )}
+                        </label>
                       </div>
-                    </div>
-                  )}
-                  <div className="subs-field">
-                    <label>Nama Lengkap</label>
-                    <input
-                      type="text"
-                      placeholder="Masukkan nama lengkap"
-                      value={form.nama}
-                      onChange={(e) => update("nama", e.target.value)}
-                    />
-                    {errors.nama && <span className="subs-error">{errors.nama}</span>}
-                  </div>
-                  <div className="subs-field">
-                    <label>Email</label>
-                    <input
-                      type="email"
-                      placeholder="Masukkan email"
-                      value={form.email}
-                      onChange={(e) => update("email", e.target.value)}
-                    />
-                    {errors.email && <span className="subs-error">{errors.email}</span>}
-                  </div>
-                  <div className="subs-form-grid">
-                    <div className="subs-field">
-                      <label>No. WhatsApp</label>
-                      <input
-                        type="tel"
-                        placeholder="08xxxxxxxxxx"
-                        value={form.wa}
-                        onChange={(e) => update("wa", e.target.value)}
-                      />
-                      {errors.wa && <span className="subs-error">{errors.wa}</span>}
-                    </div>
-                    <div className="subs-field">
-                      <label>Password</label>
-                      <input
-                        type="password"
-                        placeholder="Minimal 8 karakter"
-                        value={form.password}
-                        onChange={(e) => update("password", e.target.value)}
-                      />
-                      {errors.password && (
-                        <span className="subs-error">{errors.password}</span>
+                      {errors.fotoKtp && (
+                        <span className="subs-error">{errors.fotoKtp}</span>
                       )}
                     </div>
+
+                    {/* Data Diri */}
+                    <div className="subs-subtitle">
+                      <i className="fas fa-id-card"></i> Data Diri
+                    </div>
+                    <div className="subs-form-grid">
+                      <div className="subs-field">
+                        <label>Nama Lengkap</label>
+                        <input
+                          type="text"
+                          placeholder="Masukkan nama lengkap"
+                          value={form.nama}
+                          onChange={(e) => update("nama", e.target.value)}
+                        />
+                        {errors.nama && <span className="subs-error">{errors.nama}</span>}
+                      </div>
+                      <div className="subs-field">
+                        <label>Email</label>
+                        <input
+                          type="email"
+                          placeholder="Masukkan email"
+                          value={form.email}
+                          onChange={(e) => update("email", e.target.value)}
+                        />
+                        {errors.email && <span className="subs-error">{errors.email}</span>}
+                      </div>
+                    </div>
+                    <div className="subs-form-grid">
+                      <div className="subs-field">
+                        <label>No. WhatsApp</label>
+                        <input
+                          type="tel"
+                          placeholder="08xxxxxxxxxx"
+                          value={form.wa}
+                          onChange={(e) => update("wa", e.target.value)}
+                        />
+                        {errors.wa && <span className="subs-error">{errors.wa}</span>}
+                      </div>
+                      <div className="subs-field">
+                        <label>Password</label>
+                        <input
+                          type="password"
+                          placeholder="Minimal 8 karakter"
+                          value={form.password}
+                          onChange={(e) => update("password", e.target.value)}
+                        />
+                        {errors.password && (
+                          <span className="subs-error">{errors.password}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kolom Alamat Instalasi & Penagihan */}
+                  <div className="subs-form-grid">
+                    <div className="subs-field">
+                      <label>
+                        Alamat Instalasi <span className="subs-req">*</span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Alamat lokasi pemasangan internet"
+                        value={form.alamatInstalasi}
+                        onChange={(e) => update("alamatInstalasi", e.target.value)}
+                        disabled={form.instalasiSamaUtama}
+                      ></textarea>
+                      {errors.alamatInstalasi && (
+                        <span className="subs-error">{errors.alamatInstalasi}</span>
+                      )}
+                      <label className="subs-check subs-check-sm">
+                        <input
+                          type="checkbox"
+                          checked={form.instalasiSamaUtama}
+                          onChange={(e) => toggleInstalasiSamaUtama(e.target.checked)}
+                        />
+                        <span className="subs-checkmark">
+                          <i className="fas fa-check"></i>
+                        </span>
+                        <span className="subs-check-text">
+                          Sama dengan alamat utama (Langkah 1)
+                        </span>
+                      </label>
+                    </div>
+                    <div className="subs-field">
+                      <label>
+                        Alamat Penagihan <span className="subs-req">*</span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Alamat untuk pengiriman tagihan / invoice"
+                        value={form.alamatPenagihan}
+                        onChange={(e) => update("alamatPenagihan", e.target.value)}
+                        disabled={form.penagihanSama}
+                      ></textarea>
+                      {errors.alamatPenagihan && (
+                        <span className="subs-error">{errors.alamatPenagihan}</span>
+                      )}
+                      <label className="subs-check subs-check-sm">
+                        <input
+                          type="checkbox"
+                          checked={form.penagihanSama}
+                          onChange={(e) => togglePenagihanSama(e.target.checked)}
+                        />
+                        <span className="subs-checkmark">
+                          <i className="fas fa-check"></i>
+                        </span>
+                        <span className="subs-check-text">
+                          Sama dengan alamat utama (Langkah 1)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Info: instalasi sudah termasuk */}
+                  <div className="subs-info">
+                    <i className="fas fa-info-circle"></i>
+                    <span>
+                      Bagus! Setiap paket <strong>sudah termasuk biaya instalasi</strong>{" "}
+                      hingga <strong>{selectedPkg ? selectedPkg.speed : "kecepatan"}</strong>{" "}
+                      — tim teknisi kami akan datang ke alamat di atas untuk memasang.
+                    </span>
                   </div>
                 </div>
               )}
@@ -592,11 +840,28 @@ export default function BerlanggananPage() {
                     Lanjut <i className="fas fa-arrow-right"></i>
                   </button>
                 ) : (
-                  <button className="subs-btn-next" onClick={submit}>
-                    <i className="fas fa-paper-plane"></i> Kirim Pendaftaran
+                  <button
+                    className="subs-btn-next"
+                    onClick={submit}
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i> Mengirim...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-paper-plane"></i> Kirim Pendaftaran
+                      </>
+                    )}
                   </button>
                 )}
               </div>
+              {submitError && (
+                <div className="subs-error" style={{ textAlign: "center", marginTop: "-6px" }}>
+                  <i className="fas fa-exclamation-triangle"></i> {submitError}
+                </div>
+              )}
 
               <p className="subs-consent">
                 Dengan mendaftar, Anda setuju untuk dihubungi oleh tim Dukodu

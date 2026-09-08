@@ -84,15 +84,18 @@ export const SEARCH_ALIASES = [
 ];
 
 /** Cari area terlayani yang cocok dengan teks input (nama area atau alias). */
-export function findAreaByText(input: string): ServedArea | null {
+export function findAreaByText(
+  input: string,
+  areas: ServedArea[] = SERVED_AREAS
+): ServedArea | null {
   const v = input.trim().toLowerCase();
   if (!v) return null;
 
-  const byName = SERVED_AREAS.find((area) => v.includes(area.name.toLowerCase()));
+  const byName = areas.find((area) => v.includes(area.name.toLowerCase()));
   if (byName) return byName;
 
   const matchedAlias = SEARCH_ALIASES.find((alias) => v.includes(alias));
-  if (matchedAlias) return SERVED_AREAS[0];
+  if (matchedAlias) return areas[0] || null;
   return null;
 }
 
@@ -117,10 +120,11 @@ export function haversineKm(
 /** Cari area terlayani yang mencakup sebuah koordinat; null jika tidak ada. */
 export function findAreaByCoords(
   lat: number,
-  lng: number
+  lng: number,
+  areas: ServedArea[] = SERVED_AREAS
 ): { area: ServedArea; distanceKm: number } | null {
   let best: { area: ServedArea; distanceKm: number } | null = null;
-  for (const area of SERVED_AREAS) {
+  for (const area of areas) {
     const d = haversineKm(lat, lng, area.lat, area.lng);
     if (d <= area.radiusKm && (!best || d < best.distanceKm)) {
       best = { area, distanceKm: d };

@@ -13,7 +13,7 @@ type LinkItem = {
 
 type NavbarProps = {
   links: LinkItem[];
-  cta: { label: string; href: string; primary?: boolean };
+  cta?: { label: string; href: string; primary?: boolean };
   onCtaClick?: () => void;
 };
 
@@ -47,27 +47,29 @@ export default function Navbar({ links, cta, onCtaClick }: NavbarProps) {
                 {l.label}
               </Link>
             ))}
-            {onCtaClick ? (
-              <button className="btn-nav btn-nav-primary" onClick={() => { closeMenu(); onCtaClick(); }}>
-                {cta.label}
-              </button>
-            ) : (
-              <Link href={cta.href} className="btn-nav btn-nav-primary" onClick={closeMenu}>
-                {cta.label}
-              </Link>
-            )}
+            {cta &&
+              (onCtaClick ? (
+                <button className="btn-nav btn-nav-primary" onClick={() => { closeMenu(); onCtaClick(); }}>
+                  {cta.label}
+                </button>
+              ) : (
+                <Link href={cta.href} className="btn-nav btn-nav-primary" onClick={closeMenu}>
+                  {cta.label}
+                </Link>
+              ))}
           </nav>
 
           <div className="nav-auth">
-            {onCtaClick ? (
-              <button className="btn-nav btn-nav-primary" onClick={onCtaClick}>
-                {cta.label}
-              </button>
-            ) : (
-              <Link href={cta.href} className="btn-nav btn-nav-primary">
-                {cta.label}
-              </Link>
-            )}
+            {cta &&
+              (onCtaClick ? (
+                <button className="btn-nav btn-nav-primary" onClick={onCtaClick}>
+                  {cta.label}
+                </button>
+              ) : (
+                <Link href={cta.href} className="btn-nav btn-nav-primary">
+                  {cta.label}
+                </Link>
+              ))}
           </div>
 
           <div

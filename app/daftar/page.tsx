@@ -5,6 +5,8 @@ import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import FooterDetail from "@/components/FooterDetail";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { setCustomerSession } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Beranda", href: "/" },
@@ -14,14 +16,56 @@ const NAV_LINKS = [
 ];
 
 export default function DaftarPage() {
+  const router = useRouter();
+  const [nama, setNama] = useState("");
+  const [email, setEmail] = useState("");
+  const [nohp, setNohp] = useState("");
+  const [password, setPassword] = useState("");
+  const [konfirmasi, setKonfirmasi] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setShowToast(true);
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1400);
+    setError("");
+
+    if (password !== konfirmasi) {
+      setError("Password dan konfirmasi password tidak sama.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password minimal 8 karakter.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: nama,
+          email,
+          phone: nohp,
+          password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Pendaftaran gagal");
+        setLoading(false);
+        return;
+      }
+      setCustomerSession(data.customer);
+      setShowToast(true);
+      setTimeout(() => {
+        router.push("/portal");
+      }, 1800);
+    } catch {
+      setError("Terjadi kesalahan. Coba lagi.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +94,8 @@ export default function DaftarPage() {
                 <input
                   type="text"
                   id="nama"
+                  value={nama}
+                  onChange={(e) => setNama(e.target.value)}
                   placeholder="Masukkan nama lengkap"
                   required
                 />
@@ -63,6 +109,8 @@ export default function DaftarPage() {
                 <input
                   type="email"
                   id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Masukkan email"
                   required
                 />
@@ -76,6 +124,8 @@ export default function DaftarPage() {
                 <input
                   type="tel"
                   id="nohp"
+                  value={nohp}
+                  onChange={(e) => setNohp(e.target.value)}
                   placeholder="Masukkan nomor WhatsApp"
                   required
                 />
@@ -90,6 +140,8 @@ export default function DaftarPage() {
                   <input
                     type="password"
                     id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Buat password"
                     required
                   />
@@ -102,6 +154,8 @@ export default function DaftarPage() {
                   <input
                     type="password"
                     id="konfirmasi"
+                    value={konfirmasi}
+                    onChange={(e) => setKonfirmasi(e.target.value)}
                     placeholder="Ulangi password"
                     required
                   />
@@ -109,13 +163,15 @@ export default function DaftarPage() {
               </div>
             </div>
 
+            {error && <div className="auth-error"><i className="fas fa-circle-exclamation"></i> {error}</div>}
+
             <label className="checkbox-label terms">
               <input type="checkbox" required /> Saya menyetujui{" "}
               <a href="#">Syarat &amp; Ketentuan</a>
             </label>
 
-            <button type="submit" className="btn btn-primary auth-btn">
-              Daftar
+            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
+              {loading ? "Memproses..." : "Daftar"}
             </button>
           </form>
 
@@ -136,7 +192,7 @@ export default function DaftarPage() {
       </footer>
 
       <div className={`auth-toast${showToast ? " show" : ""}`}>
-        Berhasil! Anda akan diarahkan ke beranda.
+        Pendaftaran berhasil! Membuka portal pelanggan...
       </div>
     </>
   );
