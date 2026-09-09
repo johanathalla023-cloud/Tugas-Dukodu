@@ -13,7 +13,7 @@ function firstBits(url: string): string {
   }
 }
 
-async function probe(connString: string) {
+async function runChecks(connString: string) {
   let info: Record<string, unknown> = { url: firstBits(connString) };
   try {
     info.host = new URL(connString).hostname || null;
@@ -21,6 +21,7 @@ async function probe(connString: string) {
     info.host = null;
   }
   let pool: Pool | null = null;
+  const start = Date.now();
   try {
     pool = new Pool({
       connectionString: connString,
@@ -30,17 +31,32 @@ async function probe(connString: string) {
     });
     const client = await pool.connect();
     try {
-      const r = await client.query("SELECT 1 AS ok");
-      info.ok = r.rows[0]?.ok === 1;
+      info.plain = await client.query("SELECT 1 AS ok").then((r) => r.rows[0]?.ok === 1);
+      try {
+        const r = await client.query("SELECT $1::int AS ok", [1]);
+        info.param = r.rows[0]?.ok === 1;
+      } catch (e) {
+        info.param = false;
+        info.paramError = (e as { message?: string }).message?.slice(0, 200) ?? "param fail";
+      }
+      try {
+        const r = await client.query("SELECT 1 AS a; SELECT 2 AS b");
+        info.multiStmt = r.rows.length > 0;
+      } catch (e) {
+        info.multiStmt = false;
+        info.multiError = (e as { message?: string }).message?.slice(0, 200) ?? "multi fail";
+      }
     } finally {
       client.release();
     }
+    info.ok = true;
   } catch (err: unknown) {
     const e = err as { code?: string; message?: string };
     info.ok = false;
     info.errorCode = e?.code ?? null;
     info.error = String(e?.message ?? err).slice(0, 300);
   } finally {
+    info.ms = Date.now() - start;
     if (pool) await pool.end().catch(() => {});
   }
   return info;
@@ -52,16 +68,16 @@ export async function GET() {
   return NextResponse.json({
     env: {
       DATABASE_URL: !!databaseUrl,
+      DATABASE_URL_UNPOOLED: !!process.env.DATABASE_URL_UNPOOLED,
       POSTGRES_URL: !!postgresUrl,
-      POSTGRES_HOST: !!process.env.POSTGRES_HOST,
-      POSTGRES_USER: !!process.env.POSTGRES_USER,
-      POSTGRES_PASSWORD: !!process.env.POSTGRES_PASSWORD,
-      POSTGRES_DATABASE: !!process.env.POSTGRES_DATABASE,
+      POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING,
+      POSTGRES_POOL_URL: !!process.env.POSTGRES_POOL_URL,
+      POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
       usedByApp: databaseUrl ? "DATABASE_URL" : postgresUrl ? "POSTGRES_URL" : "none (mode JSON)",
     },
     probes: {
-      ...(postgresUrl ? { POSTGRES_URL: await probe(postgresUrl) } : {}),
-      ...(databaseUrl ? { DATABASE_URL: await probe(databaseUrl) } : {}),
+      ...(postgresUrl ? { POSTGRES_URL: await runChecks(postgresUrl) } : {}),
+      ...(databaseUrl ? { DATABASE_URL: await runChecks(databaseUrl) } : {}),
     },
   });
 }
