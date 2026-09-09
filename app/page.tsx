@@ -8,6 +8,7 @@ import FAQ from "@/components/FAQ";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FooterDetail from "@/components/FooterDetail";
 import Reveal from "@/components/Reveal";
+import PhotoSlider from "@/components/PhotoSlider";
 import { formatIDR } from "@/lib/auth";
 
 const NAV_LINKS = [
@@ -203,30 +204,7 @@ export default function HomePage() {
               </div>
 
               <div className="hero-visual">
-                <div className="hero-photos">
-                  <div className="hero-photo hero-photo--main">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw0TYJA7SsIgrZmfQgh0FLFHaNhFrYVlMNQ7nu-lhGKw&s=10"
-                      alt="Foto Dukodu 1"
-                      loading="eager"
-                    />
-                    <span className="hero-photo-badge">
-                      <i className="fas fa-bolt"></i> Fiber Optik
-                    </span>
-                  </div>
-                  <div className="hero-photo hero-photo--offset">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIBBYpaZjlLk_G7LvqJnbFglqJTA3iNTyabcPmLcweQg&s=10"
-                      alt="Foto Dukodu 2"
-                      loading="eager"
-                    />
-                    <span className="hero-photo-badge">
-                      <i className="fas fa-wifi"></i> Koneksi Stabil
-                    </span>
-                  </div>
-                </div>
+                <PhotoSlider />
               </div>
             </div>
           </div>
