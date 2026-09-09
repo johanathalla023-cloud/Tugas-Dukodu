@@ -99,6 +99,9 @@ export default function AdminDashboard() {
                 <Link href="/admin/packages" className="cms-quick"><i className="fa-solid fa-layer-group" /> <span>Kelola Paket</span></Link>
                 <Link href="/admin/tickets" className="cms-quick"><i className="fa-solid fa-wrench" /> <span>Proses Tiket</span></Link>
                 <Link href="/admin/coverage" className="cms-quick"><i className="fa-solid fa-map" /> <span>Atur Coverage</span></Link>
+                <Link href="/admin/features" className="cms-quick"><i className="fa-solid fa-star" /> <span>Keunggulan</span></Link>
+                <Link href="/admin/testimonials" className="cms-quick"><i className="fa-solid fa-comment-dots" /> <span>Apa Kata Mereka</span></Link>
+                <Link href="/admin/faqs" className="cms-quick"><i className="fa-solid fa-circle-question" /> <span>FAQ</span></Link>
               </div>
             </div>
           </div>

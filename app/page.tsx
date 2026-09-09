@@ -64,7 +64,7 @@ const FALLBACK_PACKAGES: PaketItem[] = [
   },
 ];
 
-const FEATURES = [
+const FALLBACK_FEATURES = [
   {
     icon: "fas fa-bolt",
     title: "Kecepatan Tinggi",
@@ -99,6 +99,7 @@ const FEATURES = [
 
 export default function HomePage() {
   const [packages, setPackages] = useState<PaketItem[]>(FALLBACK_PACKAGES);
+  const [features, setFeatures] = useState(FALLBACK_FEATURES);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +118,25 @@ export default function HomePage() {
             popular: p.popular,
           }));
         if (list.length) setPackages(list);
+      } catch {
+        // Gagal memuat dari admin — gunakan data bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/features");
+        const data = await res.json();
+        if (cancelled) return;
+        const list = (data.features || [])
+          .filter((f: any) => f.status === "active")
+          .sort((a: any, b: any) => a.urutan - b.urutan)
+          .map((f: any) => ({ icon: f.icon, title: f.title, desc: f.desc }));
+        if (list.length) setFeatures(list);
       } catch {
         // Gagal memuat dari admin — gunakan data bawaan.
       }
@@ -315,7 +335,7 @@ export default function HomePage() {
             </Reveal>
 
             <div className="features-grid">
-              {FEATURES.map((f) => (
+              {features.map((f) => (
                 <Reveal key={f.title}>
                   <div className="feature-card">
                     <div className="feature-icon">

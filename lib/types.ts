@@ -98,3 +98,30 @@ export interface AdminUser {
   nama: string;
   role: "superadmin" | "admin" | "support";
 }
+
+export interface Feature {
+  id: string;
+  icon: string;
+  title: string;
+  desc: string;
+  urutan: number;
+  status: "active" | "inactive";
+}
+
+export interface Testimonial {
+  id: string;
+  text: string;
+  name: string;
+  title: string;
+  initials: string;
+  urutan: number;
+  status: "active" | "inactive";
+}
+
+export interface Faq {
+  id: string;
+  question: string;
+  answer: string;
+  urutan: number;
+  status: "active" | "inactive";
+}

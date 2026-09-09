@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Reveal from "@/components/Reveal";
 
 type FaqItemProps = {
@@ -37,7 +37,7 @@ function FaqItem({ question, answer }: FaqItemProps) {
   );
 }
 
-const FAQ_DATA = [
+const FALLBACK_FAQS = [
   {
     question: "Berapa lama proses instalasi?",
     answer:
@@ -71,6 +71,27 @@ const FAQ_DATA = [
 ];
 
 export default function FAQ() {
+  const [faqs, setFaqs] = useState(FALLBACK_FAQS);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/faqs");
+        const data = await res.json();
+        if (cancelled) return;
+        const list = (data.faqs || [])
+          .filter((f: any) => f.status === "active")
+          .sort((a: any, b: any) => a.urutan - b.urutan)
+          .map((f: any) => ({ question: f.question, answer: f.answer }));
+        if (list.length) setFaqs(list);
+      } catch {
+        // Gagal memuat dari admin — gunakan data bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section id="faq" className="section">
       <div className="container">
@@ -85,7 +106,7 @@ export default function FAQ() {
         </Reveal>
         <Reveal>
           <div className="faq-wrap">
-            {FAQ_DATA.map((item) => (
+            {faqs.map((item) => (
               <FaqItem key={item.question} {...item} />
             ))}
           </div>

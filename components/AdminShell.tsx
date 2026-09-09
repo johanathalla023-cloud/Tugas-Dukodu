@@ -10,6 +10,9 @@ const NAV = [
   { href: "/admin/packages", icon: "fa-box-open", label: "Paket Internet" },
   { href: "/admin/tickets", icon: "fa-headset", label: "Tiket Support" },
   { href: "/admin/coverage", icon: "fa-map-location-dot", label: "Coverage Map" },
+  { href: "/admin/features", icon: "fa-star", label: "Keunggulan" },
+  { href: "/admin/testimonials", icon: "fa-comment-dots", label: "Apa Kata Mereka" },
+  { href: "/admin/faqs", icon: "fa-circle-question", label: "FAQ" },
 ];
 
 const NAV_LOADING_MS = 450;
@@ -70,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <em>Admin CMS</em>
           </div>
         </div>
-.
+
         <nav className="cms-nav">
           {NAV.map((item) => {
             const active = item.exact 

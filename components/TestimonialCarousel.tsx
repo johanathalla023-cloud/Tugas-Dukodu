@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 
-const TESTIMONIALS = [
+const FALLBACK_TESTIMONIALS = [
   {
     text: '"Koneksi internet Dukodu benar-benar mengubah hidup saya. Kecepatan stabil, support responsif, dan harga yang sangat terjangkau. Sangat merekomendasikan!"',
     name: "Budi Santoso",
@@ -26,11 +26,44 @@ const TESTIMONIALS = [
 export default function TestimonialCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [testimonials, setTestimonials] = useState(FALLBACK_TESTIMONIALS);
   const [activeDot, setActiveDot] = useState(0);
+  const testimonialsRef = useRef(testimonials);
+  testimonialsRef.current = testimonials;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/testimonials");
+        const data = await res.json();
+        if (cancelled) return;
+        const list = (data.testimonials || [])
+          .filter((t: any) => t.status === "active")
+          .sort((a: any, b: any) => a.urutan - b.urutan)
+          .map((t: any) => ({
+            text: t.text,
+            name: t.name,
+            title: t.title,
+            initials: t.initials,
+          }));
+        if (list.length) setTestimonials(list);
+      } catch {
+        // Gagal memuat dari admin — gunakan data bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    setActiveDot(0);
+  }, [testimonials.length]);
 
   const rotateRight = useCallback((steps: number) => {
     const track = trackRef.current;
     if (!track) return;
+    const total = testimonialsRef.current.length;
+    if (total <= 1) return;
 
     const cards = Array.from(track.children) as HTMLElement[];
     for (let s = 0; s < steps; s++) {
@@ -51,7 +84,7 @@ export default function TestimonialCarousel() {
         c.style.transform = "translateX(0)";
       });
     }
-    setActiveDot((prev) => (prev + steps) % TESTIMONIALS.length);
+    setActiveDot((prev) => (prev + steps) % total);
   }, []);
 
   const startAuto = useCallback(() => {
@@ -72,7 +105,7 @@ export default function TestimonialCarousel() {
   }, [startAuto]);
 
   const handleDotClick = (index: number) => {
-    const n = TESTIMONIALS.length;
+    const n = testimonialsRef.current.length;
     const steps = (n - index) % n;
     if (steps > 0) rotateRight(steps);
     startAuto();
@@ -93,8 +126,8 @@ export default function TestimonialCarousel() {
           onMouseLeave={startAuto}
         >
           <div className="testimonial-track" ref={trackRef}>
-            {TESTIMONIALS.map((t) => (
-              <div className="testimonial-card" key={t.initials}>
+            {testimonials.map((t) => (
+              <div className="testimonial-card" key={t.initials + t.name}>
                 <div className="testimonial-rating">
                   {[...Array(5)].map((_, i) => (
                     <i className="fas fa-star" key={i}></i>
@@ -113,7 +146,7 @@ export default function TestimonialCarousel() {
           </div>
 
           <div className="carousel-dots">
-            {TESTIMONIALS.map((_, i) => (
+            {testimonials.map((_, i) => (
               <button
                 key={i}
                 type="button"

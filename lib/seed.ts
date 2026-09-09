@@ -1,8 +1,8 @@
-import { savePackages, saveCustomers, saveBills, saveTickets, saveCoverageAreas, saveContents, saveAdminUsers } from "./db";
+import { savePackages, saveCustomers, saveBills, saveTickets, saveCoverageAreas, saveContents, saveAdminUsers, saveFeatures, saveTestimonials, saveFaqs } from "./db";
 import * as seedData from "./seedData";
 
 async function seedAll() {
-  const { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS } = seedData;
+  const { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS } = seedData;
 
   await savePackages(SEED_PACKAGES);
   await saveCustomers([]);
@@ -11,6 +11,9 @@ async function seedAll() {
   await saveCoverageAreas(SEED_AREAS);
   await saveContents(SEED_CONTENTS);
   await saveAdminUsers(SEED_ADMINS);
+  await saveFeatures(SEED_FEATURES);
+  await saveTestimonials(SEED_TESTIMONIALS);
+  await saveFaqs(SEED_FAQS);
 
   console.log("✓ Seed data initialized:");
   console.log(`  - ${SEED_PACKAGES.length} packages`);
@@ -20,6 +23,9 @@ async function seedAll() {
   console.log(`  - ${SEED_AREAS.length} coverage areas`);
   console.log(`  - ${SEED_CONTENTS.length} content items`);
   console.log(`  - ${SEED_ADMINS.length} admin users`);
+  console.log(`  - ${SEED_FEATURES.length} features`);
+  console.log(`  - ${SEED_TESTIMONIALS.length} testimonials`);
+  console.log(`  - ${SEED_FAQS.length} faqs`);
 }
 
 seedAll()

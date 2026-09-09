@@ -91,6 +91,33 @@ CREATE TABLE IF NOT EXISTS admins (
   "role" TEXT NOT NULL DEFAULT 'support'
 );
 
+CREATE TABLE IF NOT EXISTS features (
+  "id" TEXT PRIMARY KEY,
+  "icon" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "desc" TEXT NOT NULL,
+  "urutan" INTEGER NOT NULL DEFAULT 0,
+  "status" TEXT NOT NULL DEFAULT 'active'
+);
+
+CREATE TABLE IF NOT EXISTS testimonials (
+  "id" TEXT PRIMARY KEY,
+  "text" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "initials" TEXT NOT NULL,
+  "urutan" INTEGER NOT NULL DEFAULT 0,
+  "status" TEXT NOT NULL DEFAULT 'active'
+);
+
+CREATE TABLE IF NOT EXISTS faqs (
+  "id" TEXT PRIMARY KEY,
+  "question" TEXT NOT NULL,
+  "answer" TEXT NOT NULL,
+  "urutan" INTEGER NOT NULL DEFAULT 0,
+  "status" TEXT NOT NULL DEFAULT 'active'
+);
+
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers ("email");
 CREATE INDEX IF NOT EXISTS idx_customers_nopelanggan ON customers ("noPelanggan");
 CREATE INDEX IF NOT EXISTS idx_bills_nopelanggan ON bills ("noPelanggan");

@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import { query, isUsingDatabase } from "./pg";
 import { SCHEMA_SQL } from "../db/schema";
-import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS } from "./seedData";
-import { Customer, Package, Ticket, Bill, CoverageArea, Content, AdminUser } from "./types";
+import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS } from "./seedData";
+import { Customer, Package, Ticket, Bill, CoverageArea, Content, AdminUser, Feature, Testimonial, Faq } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const USING_DB = isUsingDatabase();
@@ -42,6 +42,9 @@ async function initSchemaAndSeed(): Promise<void> {
     await seedIfEmpty("coverage_areas", SEED_AREAS);
     await seedIfEmpty("contents", SEED_CONTENTS);
     await seedIfEmpty("admins", SEED_ADMINS as unknown as object[]);
+    await seedIfEmpty("features", SEED_FEATURES);
+    await seedIfEmpty("testimonials", SEED_TESTIMONIALS);
+    await seedIfEmpty("faqs", SEED_FAQS);
   } catch (err) {
     readyPromise = null;
     throw err;
@@ -374,6 +377,111 @@ export async function deleteContent(id: string) {
   if (USING_DB) return dbDelete("contents", id);
   const data = (await getContents()).filter((c) => c.id !== id);
   await saveContents(data);
+}
+
+/* ============ Features (Keunggulan) ============ */
+
+export async function getFeatures(): Promise<Feature[]> {
+  const rows = USING_DB
+    ? await dbAll<Feature>("features")
+    : fs.existsSync(path.join(DATA_DIR, "features.json"))
+      ? await fileRead<Feature>("features.json")
+      : SEED_FEATURES;
+  return rows.sort((a, b) => a.urutan - b.urutan);
+}
+export async function saveFeatures(data: Feature[]) {
+  return USING_DB ? dbReplace("features", data) : fileWrite("features.json", data);
+}
+export async function addFeature(feature: Feature): Promise<Feature> {
+  if (USING_DB) return dbAdd("features", feature);
+  const data = await getFeatures();
+  data.push(feature);
+  await saveFeatures(data);
+  return feature;
+}
+export async function updateFeature(id: string, updates: Partial<Feature>): Promise<Feature | null> {
+  if (USING_DB) return dbUpdate("features", id, updates);
+  const data = await getFeatures();
+  const idx = data.findIndex((f) => f.id === id);
+  if (idx === -1) return null;
+  data[idx] = { ...data[idx], ...updates };
+  await saveFeatures(data);
+  return data[idx];
+}
+export async function deleteFeature(id: string) {
+  if (USING_DB) return dbDelete("features", id);
+  const data = (await getFeatures()).filter((f) => f.id !== id);
+  await saveFeatures(data);
+}
+
+/* ============ Testimonials (Apa Kata Mereka) ============ */
+
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const rows = USING_DB
+    ? await dbAll<Testimonial>("testimonials")
+    : fs.existsSync(path.join(DATA_DIR, "testimonials.json"))
+      ? await fileRead<Testimonial>("testimonials.json")
+      : SEED_TESTIMONIALS;
+  return rows.sort((a, b) => a.urutan - b.urutan);
+}
+export async function saveTestimonials(data: Testimonial[]) {
+  return USING_DB ? dbReplace("testimonials", data) : fileWrite("testimonials.json", data);
+}
+export async function addTestimonial(testimonial: Testimonial): Promise<Testimonial> {
+  if (USING_DB) return dbAdd("testimonials", testimonial);
+  const data = await getTestimonials();
+  data.push(testimonial);
+  await saveTestimonials(data);
+  return testimonial;
+}
+export async function updateTestimonial(id: string, updates: Partial<Testimonial>): Promise<Testimonial | null> {
+  if (USING_DB) return dbUpdate("testimonials", id, updates);
+  const data = await getTestimonials();
+  const idx = data.findIndex((t) => t.id === id);
+  if (idx === -1) return null;
+  data[idx] = { ...data[idx], ...updates };
+  await saveTestimonials(data);
+  return data[idx];
+}
+export async function deleteTestimonial(id: string) {
+  if (USING_DB) return dbDelete("testimonials", id);
+  const data = (await getTestimonials()).filter((t) => t.id !== id);
+  await saveTestimonials(data);
+}
+
+/* ============ FAQs ============ */
+
+export async function getFaqs(): Promise<Faq[]> {
+  const rows = USING_DB
+    ? await dbAll<Faq>("faqs")
+    : fs.existsSync(path.join(DATA_DIR, "faqs.json"))
+      ? await fileRead<Faq>("faqs.json")
+      : SEED_FAQS;
+  return rows.sort((a, b) => a.urutan - b.urutan);
+}
+export async function saveFaqs(data: Faq[]) {
+  return USING_DB ? dbReplace("faqs", data) : fileWrite("faqs.json", data);
+}
+export async function addFaq(faq: Faq): Promise<Faq> {
+  if (USING_DB) return dbAdd("faqs", faq);
+  const data = await getFaqs();
+  data.push(faq);
+  await saveFaqs(data);
+  return faq;
+}
+export async function updateFaq(id: string, updates: Partial<Faq>): Promise<Faq | null> {
+  if (USING_DB) return dbUpdate("faqs", id, updates);
+  const data = await getFaqs();
+  const idx = data.findIndex((f) => f.id === id);
+  if (idx === -1) return null;
+  data[idx] = { ...data[idx], ...updates };
+  await saveFaqs(data);
+  return data[idx];
+}
+export async function deleteFaq(id: string) {
+  if (USING_DB) return dbDelete("faqs", id);
+  const data = (await getFaqs()).filter((f) => f.id !== id);
+  await saveFaqs(data);
 }
 
 /* ============ Admins ============ */
