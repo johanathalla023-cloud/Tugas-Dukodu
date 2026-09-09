@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { ensureDatabaseReady } from "@/lib/db";
+import { query as appQuery } from "@/lib/pg";
 
 function firstBits(url: string): string {
   try {
@@ -79,5 +81,27 @@ export async function GET() {
       ...(postgresUrl ? { POSTGRES_URL: await runChecks(postgresUrl) } : {}),
       ...(databaseUrl ? { DATABASE_URL: await runChecks(databaseUrl) } : {}),
     },
+    appInit: await (async () => {
+      const out: Record<string, unknown> = { started: true };
+      try {
+        await ensureDatabaseReady();
+        out.status = "ok";
+        try {
+          const tables = await appQuery<{ table_name: string }>(
+            `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name`
+          );
+          out.tables = tables.map((t) => t.table_name);
+          const pkg = await appQuery<{ c: number }>(`SELECT COUNT(*)::int AS c FROM "packages"`);
+          out.packageRows = pkg[0]?.c ?? -1;
+        } catch (e) {
+          out.listError = `${(e as { message?: string }).message ?? e}`.slice(0, 300);
+        }
+      } catch (e) {
+        out.status = "error";
+        out.errorCode = (e as { code?: string }).code ?? null;
+        out.message = `${(e as { message?: string }).message ?? e}`.slice(0, 500);
+      }
+      return out;
+    })(),
   });
 }
