@@ -70,10 +70,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <em>Admin CMS</em>
           </div>
         </div>
-
+.
         <nav className="cms-nav">
           {NAV.map((item) => {
-            const active = item.exact
+            const active = item.exact 
               ? pathname === item.href
               : pathname.startsWith(item.href);
             return (
