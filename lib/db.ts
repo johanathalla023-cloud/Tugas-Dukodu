@@ -32,12 +32,7 @@ export function ensureDatabaseReady(): Promise<void> {
 
 async function initSchemaAndSeed(): Promise<void> {
   try {
-    const exists = await query<{ e: boolean }>(
-      `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'customers') AS e`
-    );
-    if (!exists[0]?.e) {
-      await query(SCHEMA_SQL);
-    }
+    await query(SCHEMA_SQL);
     await seedIfEmpty("packages", SEED_PACKAGES);
     await seedIfEmpty("coverage_areas", SEED_AREAS);
     await seedIfEmpty("contents", SEED_CONTENTS);
