@@ -9,6 +9,7 @@ import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FooterDetail from "@/components/FooterDetail";
 import Reveal from "@/components/Reveal";
 import PhotoSlider from "@/components/PhotoSlider";
+import WhatsAppBubble from "@/components/WhatsAppBubble";
 import { formatIDR } from "@/lib/auth";
 
 const NAV_LINKS = [
@@ -364,6 +365,8 @@ export default function HomePage() {
       </main>
 
       <FooterDetail />
+
+      <WhatsAppBubble />
 
       <footer className="footer">
         <div className="container">
