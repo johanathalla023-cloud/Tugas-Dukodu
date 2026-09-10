@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
@@ -46,6 +46,14 @@ const DEMO_METHODS = [
 ];
 
 export default function CekTagihanPage() {
+  return (
+    <Suspense fallback={null}>
+      <CekTagihanContent />
+    </Suspense>
+  );
+}
+
+function CekTagihanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [phone, setPhone] = useState("");
