@@ -6052,15 +6052,454 @@ font-size: 13px;
   animation: wa-pulse 2.5s infinite;
 }
 
-@media (max-width: 480px) {
-  .wa-bubble {
-    width: 52px;
-    height: 52px;
-    font-size: 26px;
-    bottom: 20px;
-    right: 20px;
-  }
+@media (max-width: 640px) {
   .wa-tooltip {
     display: none;
   }
+}
+
+/* ── Cek Tagihan ── */
+.bil-card {
+  max-width: 520px;
+}
+
+.bil-result {
+  margin-top: 26px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.bil-customer {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--accent-light);
+  border: 1px solid var(--border-accent);
+  display: grid;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.bil-customer span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.bil-customer strong {
+  font-size: 1.02rem;
+  color: var(--text-primary);
+}
+
+.bil-customer em {
+  font-size: 0.85rem;
+  font-style: normal;
+  color: var(--text-secondary);
+}
+
+.bil-due {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1px solid #fdba74;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.bil-due div {
+  display: grid;
+  gap: 3px;
+}
+
+.bil-due span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.bil-due strong {
+  font-size: 1.6rem;
+  color: #c2410c;
+  letter-spacing: -0.02em;
+}
+
+.bil-due em {
+  font-size: 0.8rem;
+  font-style: normal;
+  color: #9a3412;
+}
+
+.bil-list {
+  display: grid;
+  gap: 12px;
+}
+
+.bil-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  background: var(--bg-white);
+  box-shadow: var(--shadow-xs);
+}
+
+.bil-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bil-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--bg-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 0.7rem;
+  flex: 0 0 auto;
+  order: 0;
+}
+
+.bil-check.checked {
+  border-color: #16a34a;
+  background: #16a34a;
+  color: #fff;
+}
+
+.bil-bulan {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bil-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.bil-pill.gold {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.bil-pill.green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.bil-pill.red {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.bil-pill.blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.bil-item-mid {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.bil-item-mid strong {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.bil-item-mid span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.bil-item-paid {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #166534;
+  background: #f0fdf4;
+  border-radius: var(--radius-xs);
+  padding: 8px 10px;
+}
+
+.bil-pay-btn {
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #25d366, #1eb55a);
+  color: #fff;
+  font-family: var(--font-inter);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.bil-pay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
+}
+
+.bil-pay-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bil-yape {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.bil-yape strong {
+  color: #1f6feb;
+}
+
+.bil-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  animation: fadeDown 0.35s ease both;
+  max-width: calc(100vw - 40px);
+}
+
+.bil-toast.success {
+  background: #16a34a;
+}
+
+.bil-toast.error {
+  background: #dc2626;
+}
+
+.bil-toast.info {
+  background: #2563eb;
+}
+
+.bil-verify {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  box-shadow: var(--shadow-md);
+  animation: fadeDown 0.35s ease both;
+  max-width: calc(100vw - 40px);
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Payment Modal ── */
+.bil-modal {
+  max-width: 440px;
+  width: 100%;
+}
+
+.bil-modal-body {
+  padding: 20px 24px 24px;
+}
+
+.bil-modal-bill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.bil-modal-bill span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.bil-modal-bill strong {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.bil-modal-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: var(--accent-light);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 0 0 16px;
+}
+
+.bil-modal-note i {
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.bil-methods {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.bil-method {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-inter);
+}
+
+.bil-method:hover {
+  border-color: var(--accent-strong);
+}
+
+.bil-method.selected {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.bil-method > i {
+  font-size: 1.1rem;
+  color: var(--accent);
+  width: 22px;
+  text-align: center;
+}
+
+.bil-method span {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+}
+
+.bil-method strong {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.bil-method em {
+  font-size: 0.78rem;
+  font-style: normal;
+  color: var(--text-muted);
+}
+
+.bil-method-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-medium);
+  flex: none;
+}
+
+.bil-method-radio.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.bil-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.bil-modal-actions .cms-btn {
+  flex: 1;
+}
+
+.bil-empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--text-muted);
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.bil-empty i {
+  font-size: 2rem;
+  color: var(--text-faint);
+}
+
+.bil-empty p {
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.bil-login {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+}
+
+.bil-login a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bil-login a:hover {
+  text-decoration: underline;
 }

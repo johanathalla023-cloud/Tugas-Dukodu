@@ -1,13 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBillsByCustomer, updateBill, getBillById } from "@/lib/db";
+import { getBillsByCustomer, getCustomerByPhone, updateBill, getBillById } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const noPelanggan = searchParams.get("noPelanggan");
+  const phone = searchParams.get("phone");
+
   if (noPelanggan) {
     return NextResponse.json({ success: true, bills: await getBillsByCustomer(noPelanggan) });
   }
-  return NextResponse.json({ error: "Parameter noPelanggan diperlukan" }, { status: 400 });
+  if (phone) {
+    const customer = await getCustomerByPhone(phone);
+    if (!customer) {
+      return NextResponse.json({ error: "Nomor WhatsApp tidak terdaftar" }, { status: 404 });
+    }
+    return NextResponse.json({
+      success: true,
+      customer: { namaLengkap: customer.namaLengkap, noPelanggan: customer.noPelanggan, noWhatsApp: customer.noWhatsApp },
+      bills: await getBillsByCustomer(customer.noPelanggan),
+    });
+  }
+  return NextResponse.json({ error: "Parameter phone diperlukan" }, { status: 400 });
 }
 
 export async function POST(req: NextRequest) {

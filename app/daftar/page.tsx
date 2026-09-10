@@ -4,9 +4,7 @@ import { useState } from "react";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import FooterDetail from "@/components/FooterDetail";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { setCustomerSession } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Beranda", href: "/" },
@@ -57,10 +55,9 @@ export default function DaftarPage() {
         setLoading(false);
         return;
       }
-      setCustomerSession(data.customer);
       setShowToast(true);
       setTimeout(() => {
-        router.push("/portal");
+        router.push("/");
       }, 1800);
     } catch {
       setError("Terjadi kesalahan. Coba lagi.");
@@ -73,7 +70,7 @@ export default function DaftarPage() {
       <BgScene />
       <Navbar
         links={NAV_LINKS}
-        cta={{ label: "Masuk", href: "/login" }}
+        cta={{ label: "Berlangganan", href: "/berlangganan" }}
       />
 
       <section className="auth-section">
@@ -176,7 +173,7 @@ export default function DaftarPage() {
           </form>
 
           <p className="auth-switch">
-            Sudah punya akun? <Link href="/login">Login</Link>
+            Ingin berlangganan? <a href="/berlangganan">Ajukan pendaftaran</a>
           </p>
         </div>
       </section>
@@ -192,7 +189,7 @@ export default function DaftarPage() {
       </footer>
 
       <div className={`auth-toast${showToast ? " show" : ""}`}>
-        Pendaftaran berhasil! Membuka portal pelanggan...
+        Pendaftaran berhasil! Mengarahkan ke beranda...
       </div>
     </>
   );

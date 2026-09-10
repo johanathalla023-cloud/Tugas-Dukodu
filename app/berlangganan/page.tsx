@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import BgScene from "@/components/BgScene";
 import Navbar from "@/components/Navbar";
 import FooterDetail from "@/components/FooterDetail";
 import LocationMap from "@/components/LocationMap";
-import { setCustomerSession } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Beranda", href: "/" },
@@ -206,7 +204,6 @@ const EMPTY_FORM: FormData = {
 };
 
 export default function BerlanggananPage() {
-  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -401,15 +398,6 @@ export default function BerlanggananPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal mengirim pendaftaran");
 
-      setCustomerSession({
-        id: data.customer.id,
-        namaLengkap: data.customer.namaLengkap,
-        email: data.customer.email,
-        noWhatsApp: data.customer.noWhatsApp,
-        noPelanggan: data.customer.noPelanggan,
-        status: data.customer.status,
-        paketId: data.customer.paketId,
-      });
       setSubmitted(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan");
@@ -439,14 +427,11 @@ export default function BerlanggananPage() {
                   pemasangan.
                 </p>
                 <div className="modal-success-actions">
-                  <button
-                    className="btn btn-primary modal-success-btn"
-                    onClick={() => router.push("/portal")}
-                  >
-                    <i className="fas fa-user-circle"></i> Masuk ke Portal
-                  </button>
-                  <a href="/" className="btn btn-ghost modal-success-btn">
-                    Kembali ke Beranda
+                  <a href="/" className="btn btn-primary modal-success-btn">
+                    <i className="fas fa-house"></i> Kembali ke Beranda
+                  </a>
+                  <a href="/cek-tagihan" className="btn btn-ghost modal-success-btn">
+                    Cek Tagihan
                   </a>
                 </div>
               </div>

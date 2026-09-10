@@ -13,6 +13,7 @@ import WhatsAppBubble from "@/components/WhatsAppBubble";
 import { formatIDR } from "@/lib/auth";
 
 const NAV_LINKS = [
+  { label: "Cek Tagihan", href: "/cek-tagihan" },
   { label: "Paket", href: "#paket" },
   { label: "Cek Area", href: "#cek-area" },
   { label: "Keunggulan", href: "#keunggulan" },

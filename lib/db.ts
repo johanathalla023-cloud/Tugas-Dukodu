@@ -179,6 +179,23 @@ export async function getCustomerByNo(noPelanggan: string): Promise<Customer | n
     ? dbFind<Customer>("customers", "noPelanggan", noPelanggan)
     : (await getCustomers()).find((c) => c.noPelanggan === noPelanggan) || null;
 }
+export function normalizePhone(phone: string): string {
+  let p = (phone || "").replace(/[^\d]/g, "");
+  if (p.startsWith("62")) return p;
+  if (p.startsWith("0")) return "62" + p.slice(1);
+  return "62" + p;
+}
+export async function getCustomerByPhone(phone: string): Promise<Customer | null> {
+  const target = normalizePhone(phone);
+  if (!target) return null;
+  if (USING_DB) {
+    const all = await dbAll<Customer>("customers");
+    return all.find((c) => normalizePhone(c.noWhatsApp || "") === target) || null;
+  }
+  return (
+    (await getCustomers()).find((c) => normalizePhone(c.noWhatsApp || "") === target) || null
+  );
+}
 export async function addCustomer(customer: Customer): Promise<Customer> {
   if (USING_DB) return dbAdd("customers", customer);
   const data = await getCustomers();

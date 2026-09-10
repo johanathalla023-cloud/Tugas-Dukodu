@@ -66,6 +66,7 @@ export interface Bill {
   tanggalBayar?: string;
   metodeBayar?: string;
   jumlahBayar?: number;
+  paymentRef?: string;
 }
 
 export interface CoverageArea {

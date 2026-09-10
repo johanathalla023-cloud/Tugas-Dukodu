@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS bills (
   "metodeBayar" TEXT,
   "jumlahBayar" INTEGER
 );
+ALTER TABLE bills ADD COLUMN IF NOT EXISTS "paymentRef" TEXT;
 
 CREATE TABLE IF NOT EXISTS coverage_areas (
   "id" TEXT PRIMARY KEY,
