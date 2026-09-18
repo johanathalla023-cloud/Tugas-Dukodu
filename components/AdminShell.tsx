@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/tickets", icon: "fa-headset", label: "Tiket Support" },
   { href: "/admin/coverage", icon: "fa-map-location-dot", label: "Coverage Map" },
   { href: "/admin/features", icon: "fa-star", label: "Keunggulan" },
+  { href: "/admin/media", icon: "fa-images", label: "Media Website" },
   { href: "/admin/testimonials", icon: "fa-comment-dots", label: "Apa Kata Mereka" },
   { href: "/admin/faqs", icon: "fa-circle-question", label: "FAQ" },
 ];

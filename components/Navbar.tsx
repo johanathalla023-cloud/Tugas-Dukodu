@@ -20,12 +20,27 @@ type NavbarProps = {
 export default function Navbar({ links, cta, onCtaClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [logo, setLogo] = useState(LOGO);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/site");
+        const data = await res.json();
+        if (!cancelled && data.settings?.logo) setLogo(data.settings.logo);
+      } catch {
+        // Gagal memuat dari admin — gunakan logo bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const closeMenu = () => setOpen(false);
@@ -37,7 +52,7 @@ export default function Navbar({ links, cta, onCtaClick }: NavbarProps) {
           <div className="brand-group">
             <Link href="/" className="logo-brand" onClick={closeMenu}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={LOGO} alt="Dukodu" className="logo-img" />
+              <img src={logo} alt="Dukodu" className="logo-img" />
             </Link>
           </div>
 

@@ -1,4 +1,4 @@
-import { savePackages, saveCustomers, saveBills, saveTickets, saveCoverageAreas, saveContents, saveAdminUsers, saveFeatures, saveTestimonials, saveFaqs } from "./db";
+import { savePackages, saveCustomers, saveBills, saveTickets, saveCoverageAreas, saveContents, saveAdminUsers, saveFeatures, saveTestimonials, saveFaqs, saveSiteSettings, saveGalleryPhotos } from "./db";
 import * as seedData from "./seedData";
 
 const MAIN_CUSTOMER = {
@@ -143,7 +143,7 @@ const MAIN_BILLS = [
 ];
 
 async function seedAll() {
-  const { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS } = seedData;
+  const { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS, SEED_SETTINGS, SEED_GALLERY } = seedData;
 
   await savePackages(SEED_PACKAGES);
   await saveCustomers(SEED_CUSTOMERS);
@@ -155,6 +155,8 @@ async function seedAll() {
   await saveFeatures(SEED_FEATURES);
   await saveTestimonials(SEED_TESTIMONIALS);
   await saveFaqs(SEED_FAQS);
+  await saveSiteSettings(SEED_SETTINGS[0]);
+  await saveGalleryPhotos(SEED_GALLERY);
 
   console.log("✓ Seed data initialized:");
   console.log(`  - ${SEED_PACKAGES.length} packages`);
@@ -167,6 +169,8 @@ async function seedAll() {
   console.log(`  - ${SEED_FEATURES.length} features`);
   console.log(`  - ${SEED_TESTIMONIALS.length} testimonials`);
   console.log(`  - ${SEED_FAQS.length} faqs`);
+  console.log(`  - 1 site settings`);
+  console.log(`  - ${SEED_GALLERY.length} gallery photos`);
 }
 
 seedAll()

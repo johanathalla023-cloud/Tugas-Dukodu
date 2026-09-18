@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import { query, isUsingDatabase } from "./pg";
 import { SCHEMA_SQL } from "../db/schema";
-import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS } from "./seedData";
-import { Customer, Package, Ticket, Bill, CoverageArea, Content, AdminUser, Feature, Testimonial, Faq } from "./types";
+import { SEED_PACKAGES, SEED_AREAS, SEED_CONTENTS, SEED_ADMINS, SEED_FEATURES, SEED_TESTIMONIALS, SEED_FAQS, SEED_SETTINGS, SEED_GALLERY } from "./seedData";
+import { Customer, Package, Ticket, Bill, CoverageArea, Content, AdminUser, Feature, Testimonial, Faq, SiteSettings, GalleryPhoto } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const USING_DB = isUsingDatabase();
@@ -40,6 +40,8 @@ async function initSchemaAndSeed(): Promise<void> {
     await seedIfEmpty("features", SEED_FEATURES);
     await seedIfEmpty("testimonials", SEED_TESTIMONIALS);
     await seedIfEmpty("faqs", SEED_FAQS);
+    await seedIfEmpty("site_settings", SEED_SETTINGS);
+    await seedIfEmpty("gallery", SEED_GALLERY);
   } catch (err) {
     readyPromise = null;
     throw err;
@@ -509,6 +511,71 @@ export async function getAdminByUsername(username: string): Promise<AdminUser | 
   return USING_DB
     ? dbFind<AdminUser>("admins", "username", username)
     : (await getAdminUsers()).find((a) => a.username === username) || null;
+}
+
+/* ============ Site Settings (Header/Logo) ============ */
+
+const DEFAULT_SITE_SETTINGS: SiteSettings = SEED_SETTINGS[0];
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  if (USING_DB) {
+    await ensureDatabaseReady();
+    const rows = await query<SiteSettings>(`SELECT * FROM "site_settings" LIMIT 1`);
+    return rows[0] ?? SEED_SETTINGS[0];
+  }
+  const filePath = path.join(DATA_DIR, "site.json");
+  if (!fs.existsSync(filePath)) return DEFAULT_SITE_SETTINGS;
+  return await fileReadSingle<SiteSettings>("site.json") ?? DEFAULT_SITE_SETTINGS;
+}
+
+export async function saveSiteSettings(settings: SiteSettings): Promise<SiteSettings> {
+  if (USING_DB) {
+    await ensureDatabaseReady();
+    const rows = await query<SiteSettings>(`SELECT * FROM "site_settings" LIMIT 1`);
+    if (rows[0]) {
+      await dbUpdate<SiteSettings>("site_settings", rows[0].id, settings);
+      return { ...rows[0], ...settings };
+    }
+    await dbAdd<SiteSettings>("site_settings", settings);
+    return settings;
+  }
+  await fileWriteSingle<SiteSettings>("site.json", settings);
+  return settings;
+}
+
+/* ============ Gallery (Foto Hero) ============ */
+
+export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
+  const rows = USING_DB
+    ? await dbAll<GalleryPhoto>("gallery")
+    : fs.existsSync(path.join(DATA_DIR, "gallery.json"))
+      ? await fileRead<GalleryPhoto>("gallery.json")
+      : SEED_GALLERY;
+  return rows.sort((a, b) => a.urutan - b.urutan);
+}
+export async function saveGalleryPhotos(data: GalleryPhoto[]) {
+  return USING_DB ? dbReplace("gallery", data) : fileWrite("gallery.json", data);
+}
+export async function addGalleryPhoto(photo: GalleryPhoto): Promise<GalleryPhoto> {
+  if (USING_DB) return dbAdd("gallery", photo);
+  const data = await getGalleryPhotos();
+  data.push(photo);
+  await saveGalleryPhotos(data);
+  return photo;
+}
+export async function updateGalleryPhoto(id: string, updates: Partial<GalleryPhoto>): Promise<GalleryPhoto | null> {
+  if (USING_DB) return dbUpdate("gallery", id, updates);
+  const data = await getGalleryPhotos();
+  const idx = data.findIndex((p) => p.id === id);
+  if (idx === -1) return null;
+  data[idx] = { ...data[idx], ...updates };
+  await saveGalleryPhotos(data);
+  return data[idx];
+}
+export async function deleteGalleryPhoto(id: string) {
+  if (USING_DB) return dbDelete("gallery", id);
+  const data = (await getGalleryPhotos()).filter((p) => p.id !== id);
+  await saveGalleryPhotos(data);
 }
 
 /* ============ Stats ============ */

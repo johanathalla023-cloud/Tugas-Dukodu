@@ -126,3 +126,19 @@ export interface Faq {
   urutan: number;
   status: "active" | "inactive";
 }
+
+export interface SiteSettings {
+  id: string;
+  logo: string;
+  updatedAt: string;
+}
+
+export interface GalleryPhoto {
+  id: string;
+  src: string;
+  alt: string;
+  icon: string;
+  label: string;
+  urutan: number;
+  status: "active" | "inactive";
+}

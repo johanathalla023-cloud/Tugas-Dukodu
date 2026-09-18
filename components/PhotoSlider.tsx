@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SLIDES = [
+const FALLBACK_SLIDES = [
   {
     src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw0TYJA7SsIgrZmfQgh0FLFHaNhFrYVlMNQ7nu-lhGKw&s=10",
     alt: "Foto Dukodu 1",
@@ -22,19 +22,39 @@ const INTERVAL_MS = 4500;
 export default function PhotoSlider() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [slides, setSlides] = useState(FALLBACK_SLIDES);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/gallery");
+        const data = await res.json();
+        if (cancelled) return;
+        const list = (data.photos || [])
+          .filter((p: any) => p.status === "active")
+          .sort((a: any, b: any) => a.urutan - b.urutan)
+          .map((p: any) => ({ src: p.src, alt: p.alt, icon: p.icon, label: p.label }));
+        if (list.length) setSlides(list);
+      } catch {
+        // Gagal memuat dari admin — gunakan foto bawaan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (paused) return;
     timer.current = setInterval(() => {
-      setIndex((i) => (i + 1) % SLIDES.length);
+      setIndex((i) => (i + 1) % slides.length);
     }, INTERVAL_MS);
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [paused]);
+  }, [paused, slides.length]);
 
-  const goto = (i: number) => setIndex(((i % SLIDES.length) + SLIDES.length) % SLIDES.length);
+  const goto = (i: number) => setIndex(((i % slides.length) + slides.length) % slides.length);
 
   return (
     <div
@@ -43,7 +63,7 @@ export default function PhotoSlider() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="photo-slider-track">
-        {SLIDES.map((s, i) => (
+        {slides.map((s, i) => (
           <div
             key={s.src}
             className="photo-slider-slide"
@@ -76,7 +96,7 @@ export default function PhotoSlider() {
       </button>
 
       <div className="photo-slider-dots">
-        {SLIDES.map((_, i) => (
+        {slides.map((_, i) => (
           <button
             key={i}
             type="button"

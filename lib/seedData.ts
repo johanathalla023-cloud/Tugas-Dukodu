@@ -1,4 +1,4 @@
-import type { Package, CoverageArea, Content, AdminUser, Feature, Testimonial, Faq } from "./types";
+import type { Package, CoverageArea, Content, AdminUser, Feature, Testimonial, Faq, SiteSettings, GalleryPhoto } from "./types";
 
 export const SEED_PACKAGES: Package[] = [
   { id: "pkg-001", nama: "Paket Hemat", kecepatan: "30 Mbps", harga: 175000, deskripsi: "Cocok untuk browsing & streaming ringan", fitur: ["Unlimited quota", "WiFi router", "Free instalasi", "Support 24/7"], status: "active", popular: false },
@@ -46,4 +46,13 @@ export const SEED_FAQS: Faq[] = [
   { id: "faq-004", question: "Bisa ganti paket kapan saja?", answer: "Ya, Anda bisa upgrade atau downgrade paket kapan saja tanpa penalti. Perubahan akan berlaku bulan berikutnya dengan proses yang sangat mudah.", urutan: 4, status: "active" },
   { id: "faq-005", question: "Apa itu SLA (Service Level Agreement)?", answer: "SLA adalah jaminan layanan kami dengan uptime 99.9%. Jika terjadi downtime di luar maintenance, Anda akan mendapat kompensasi kredit otomatis.", urutan: 5, status: "active" },
   { id: "faq-006", question: "Bagaimana kontrak dan komitmen waktu?", answer: "Kami menawarkan kontrak fleksibel mulai dari 1 bulan hingga 12 bulan. Semakin lama komitmen, semakin besar diskon yang Anda dapatkan.", urutan: 6, status: "active" },
+];
+
+export const SEED_SETTINGS: SiteSettings[] = [
+  { id: "site-001", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz226FoSaYk0w24v0a_7m63JKed5o3yzlxXAnnfqoG8g&s=10", updatedAt: "2026-09-01" },
+];
+
+export const SEED_GALLERY: GalleryPhoto[] = [
+  { id: "gal-001", src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw0TYJA7SsIgrZmfQgh0FLFHaNhFrYVlMNQ7nu-lhGKw&s=10", alt: "Foto Dukodu 1", icon: "fa-bolt", label: "Fiber Optik", urutan: 1, status: "active" },
+  { id: "gal-002", src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIBBYpaZjlLk_G7LvqJnbFglqJTA3iNTyabcPmLcweQg&s=10", alt: "Foto Dukodu 2", icon: "fa-wifi", label: "Koneksi Stabil", urutan: 2, status: "active" },
 ];

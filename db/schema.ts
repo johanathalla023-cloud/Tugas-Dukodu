@@ -120,6 +120,22 @@ CREATE TABLE IF NOT EXISTS faqs (
   "status" TEXT NOT NULL DEFAULT 'active'
 );
 
+CREATE TABLE IF NOT EXISTS site_settings (
+  "id" TEXT PRIMARY KEY,
+  "logo" TEXT NOT NULL DEFAULT '',
+  "updatedAt" TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gallery (
+  "id" TEXT PRIMARY KEY,
+  "src" TEXT NOT NULL,
+  "alt" TEXT NOT NULL,
+  "icon" TEXT NOT NULL DEFAULT 'fa-image',
+  "label" TEXT NOT NULL DEFAULT '',
+  "urutan" INTEGER NOT NULL DEFAULT 0,
+  "status" TEXT NOT NULL DEFAULT 'active'
+);
+
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers ("email");
 CREATE INDEX IF NOT EXISTS idx_customers_nopelanggan ON customers ("noPelanggan");
 CREATE INDEX IF NOT EXISTS idx_bills_nopelanggan ON bills ("noPelanggan");
