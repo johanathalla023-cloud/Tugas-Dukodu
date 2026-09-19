@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     alt: body.alt || "",
     icon: body.icon || "fa-image",
     label: body.label || "",
-    urutan: Number(body.urutan) || photos.length + 1,
+    urutan: Number(body.urutan) || photos.length + 1, .
     status: body.status || "active",
   };
   await addGalleryPhoto(photo);
